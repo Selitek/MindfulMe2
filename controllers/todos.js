@@ -1,6 +1,55 @@
+const multer = require('multer');
+const Post = require('../models/Post');
+//todo
 const Todo = require('../models/Todo')
 
+//post
+// Configure Multer for file uploads
+// const storage = multer.diskStorage({
+//     destination: function (req, file, cb) {
+//         cb(null, 'uploads/') // Destination directory for storing uploaded files
+//     },
+//     filename: function (req, file, cb) {
+//         cb(null, Date.now() + '-' + file.originalname) // Rename uploaded files to avoid duplicates
+//     }
+// });
+// const upload = multer({ storage: storage });
+
+// // Controller to handle form submission for creating a post
+// exports.createPost = upload.single('imageContent'), async (req, res) => {
+//     try {
+//         // Extract form data
+//         const { textContent } = req.body;
+//         const imageContent = req.file.path; // Path to the uploaded image file
+
+//         // Create a new post object
+//         const newPost = new Post({
+//             textContent: textContent,
+//             imageContent: imageContent
+//         });
+
+//         // Save the post to the database
+//         await newPost.save();
+//         console.log('post has been added!')
+//             res.redirect('/todos')
+//         // Redirect to a success page or send a success response
+//        // res.status(201).send('Post created successfully!');
+//     } catch (err) {
+//         console.error('Error creating post:', err);
+//         res.status(500).send('Internal Server Error');
+//     }
+// };
+
 module.exports = {
+    createPost: async (req, res)=>{
+        try{
+            await Post.create({textContent: req.body})
+            console.log('post has been added!')
+            res.redirect('/todos')
+        }catch(err){
+            console.log(err)
+        }
+    },
     getTodos: async (req,res)=>{
         console.log(req.user)
         try{

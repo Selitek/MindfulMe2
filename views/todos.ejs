@@ -24,6 +24,16 @@
         <input type="text" placeholder="Enter Todo Item" name='todoItem'>
         <input type="submit">
     </form>
+    <h1>Create a New Post</h1>
+    <form action="/todos/makepost" method='POST'>
+        <label for="imageContent">Image:</label>
+        <input type="file" id="imageContent" name="imageContent"><br><br>
+        
+        <label for="textContent">Text Content:</label><br>
+        <textarea id="textContent" name="textContent" rows="4" cols="50"></textarea><br><br>
+
+        <input type="submit">
+    </form>
 
     <a href="/logout">Logout</a>
 
