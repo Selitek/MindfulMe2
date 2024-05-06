@@ -187,6 +187,7 @@
 const passport = require('passport');
 const validator = require('validator');
 const User = require('../models/User');
+const Rating = require('../models/Rating');
 
 // Helper function to generate a new user ID
 async function generatePostId() {
@@ -210,7 +211,7 @@ async function generatePostId() {
 
 exports.getLogin = (req, res) => {
     if (req.user) {
-        return res.redirect('/todos');
+        return res.redirect('/');
     }
     res.render('login', {
         title: 'Login'
@@ -237,7 +238,7 @@ exports.postLogin = (req, res, next) => {
         req.logIn(user, (err) => {
             if (err) { return next(err); }
             req.flash('success', { msg: 'Success! You are logged in.' });
-            res.redirect(req.session.returnTo || '/todos');
+            res.redirect(req.session.returnTo || '/');
         });
     })(req, res, next);
 };
@@ -255,12 +256,89 @@ exports.logout = (req, res) => {
 
 exports.getSignup = (req, res) => {
     if (req.user) {
-        return res.redirect('/todos');
+        return res.redirect('/');
     }
     res.render('signup', {
         title: 'Create Account'
     });
 };
+
+// exports.postSignup = async (req, res, next) => {
+//     try {
+//         const validationErrors = [];
+//         if (!validator.isEmail(req.body.email)) validationErrors.push({ msg: 'Please enter a valid email address.' });
+//         if (!validator.isLength(req.body.password, { min: 8 })) validationErrors.push({ msg: 'Password must be at least 8 characters long' });
+//         if (req.body.password !== req.body.confirmPassword) validationErrors.push({ msg: 'Passwords do not match' });
+
+//         if (validationErrors.length) {
+//             req.flash('errors', validationErrors);
+//             return res.redirect('../signup');
+//         }
+//         req.body.email = validator.normalizeEmail(req.body.email, { gmail_remove_dots: false });
+
+//         // Generate a new user ID
+//         const userId = await generatePostId();
+//         // var userIdNum = Number(userId);
+//         // Find existing user
+//         const existingUser = await User.findOne({ $or: [{ email: req.body.email }, { userName: req.body.userName }] });
+
+//         if (existingUser) {
+//             req.flash('errors', { msg: 'Account with that email address or username already exists.' });
+//             return res.redirect('../signup');
+//         }
+
+//         // Create a new user object with the generated ID
+//         const newUser = new User({
+//             _id: userId,
+//             userName: req.body.userName,
+//             email: req.body.email,
+//             password: req.body.password
+//             // You can set other properties here if needed
+//         });
+
+//         // Save the new user to the database
+//         await newUser.save();
+
+//         //add user to rating matrix
+//         async function addUser(userId) {
+//             try {
+//                 // Get the existing ratings matrix
+//                 let ratings = await Rating.findOne();
+//                 let ratingsMatrix = ratings.ratingsMatrix;
+                
+//                 if(ratingsMatrix.length == 0){
+//                     ratingsMatrix.push(new Array(1).fill(0));
+//                 }
+//                 else{
+//                     // Add a new column (array of zeros) for the new user
+//                 ratingsMatrix.forEach(row => {
+//                     row.push(0);
+//                 });
+//                 }
+                
+        
+//                 // Save the updated ratings matrix
+//                 await Rating.updateOne({}, { ratingsMatrix: ratingsMatrix });
+        
+//                 console.log(`User ${userId} added successfully.`);
+//             } catch (error) {
+//                 console.error('Error adding user:', error);
+//             }
+//         }
+
+//         // Log in the user
+//         req.logIn(newUser, (err) => {
+//             if (err) { return next(err); }
+//             req.flash('success', { msg: 'Success! You are logged in.' });
+//             res.redirect('/todos');
+//         });
+//     } catch (error) {
+//         console.error('Error creating user:', error);
+//         res.status(500).json({ message: 'Internal server error' });
+//     }
+// };
+
+
 
 exports.postSignup = async (req, res, next) => {
     try {
@@ -277,7 +355,7 @@ exports.postSignup = async (req, res, next) => {
 
         // Generate a new user ID
         const userId = await generatePostId();
-        // var userIdNum = Number(userId);
+        
         // Find existing user
         const existingUser = await User.findOne({ $or: [{ email: req.body.email }, { userName: req.body.userName }] });
 
@@ -297,15 +375,54 @@ exports.postSignup = async (req, res, next) => {
 
         // Save the new user to the database
         await newUser.save();
+        // //add new ratings
+        // try {
+        //     const newRating = new Rating();
+    
+        //     await newRating.save();
+    
+        //     res.status(201).json({ message: 'Rating object added successfully', rating: newRating });
+        // } catch (error) {
+        //     console.error('Error adding rating object:', error);
+        //     res.status(500).json({ message: 'Internal server error' });
+        // }
+
+        // Add the user to the rating matrix
+        try {
+            // Get the existing ratings matrix
+            let ratings = await Rating.findOne();
+            let ratingsMatrix = ratings.ratingsMatrix;
+            
+            if(ratingsMatrix.length === 0){
+                ratingsMatrix.push(new Array(1).fill(0));
+            }
+            else{
+                
+                // Add a new column (array of zeros) for the new user
+                ratingsMatrix.forEach(row => {
+                    row.push(0);
+                });
+            }
+
+            // Save the updated ratings matrix
+            await Rating.updateOne({}, { ratingsMatrix: ratingsMatrix });
+
+            console.log(`User ${userId} added successfully to rating matrix.`);
+        } catch (error) {
+            console.error('Error adding user to rating matrix:', error);
+        }
 
         // Log in the user
         req.logIn(newUser, (err) => {
             if (err) { return next(err); }
             req.flash('success', { msg: 'Success! You are logged in.' });
-            res.redirect('/todos');
+            res.redirect('/');
         });
     } catch (error) {
         console.error('Error creating user:', error);
         res.status(500).json({ message: 'Internal server error' });
     }
 };
+
+
+

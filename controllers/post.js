@@ -1,8 +1,10 @@
 const multer = require('multer');
 const Post = require('../models/Post');
+const Rating = require('../models/Rating');
 const cloudinary = require("../middleware/cloudinary");
 // Helper function to generate a new user ID
 async function generatePostId() {
+    
     try {
         // Find the latest user from the user database
         const latestUser = await Post.findOne().sort({ _id: -1 });
@@ -13,7 +15,7 @@ async function generatePostId() {
         }
         console.log(latestUser._id + 1);
         // Otherwise, return the latest user's ID incremented by 1
-
+        
         return Number(latestUser._id) + 1;
     } catch (error) {
         console.error('Error generating user ID:', error);
@@ -39,28 +41,58 @@ exports.getPost = async (req, res) => {
 
 // Controller to handle form submission for creating a post
 exports.createPost = async (req, res, next) => {
+    
     try {
         // Extract form data
-        const { textContent } = req.body;
+        const {textContent} = req.body;
+        const userId = req.user._id;
+        console.log(`user id: ${userId}`);
+        
    
        const result = await cloudinary.uploader.upload(req.file.path);
+       console.log(`type of cloudinaryId ${typeof result.public_id}`)
        console.log(result)
         //const imageContent = req.file.path; // Path to the uploaded image file
 
         //Generate Id
-        const userId = await generatePostId();
+        const postId = await generatePostId();
         // Create a new post object
         const newPost = new Post({
+            user:userId,
             imageContent: result.secure_url,
             cloudinaryId: result.public_id,
-            _id: userId,
+            _id: postId,
             textContent: textContent
         });
 
         // Save the post to the database
         await newPost.save();
+
+        // Function to add a new movie
+
+    try {
+        if (postId !== 0) {
+            // Get the existing ratings matrix
+            let ratings = await Rating.findOne();
+            let ratingsMatrix = ratings.ratingsMatrix;
+
+            // Add a new row (array of zeros) for the new movie
+            ratingsMatrix.push(new Array(ratingsMatrix[0].length).fill(0));
+
+            // Save the updated ratings matrix
+            await Rating.updateOne({}, { ratingsMatrix: ratingsMatrix });
+
+            console.log(`Movie ${postId} added to rating matrix successfully.`);
+        } else {
+            console.log('Post ID is 0. No new row added.');
+        }
+    } catch (error) {
+        console.error('Error adding movie:', error);
+    }
+
+
         console.log('post has been added!')
-            res.redirect('/todos')
+            res.redirect('/')
         // Redirect to a success page or send a success response
        // res.status(201).send('Post created successfully!');
     } catch (err) {

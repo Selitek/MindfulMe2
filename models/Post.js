@@ -7,9 +7,10 @@ const CommentSchema = new mongoose.Schema({
 });
 
 const PostSchema = new mongoose.Schema({
-    //user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    user: { type: Number, ref: 'User' },
     textContent: { type: String, required: true },
     imageContent: { type: String }, // Assuming image content is stored as a URL
+    cloudinaryId: { type: String },
     _id: { type: Number, required: true },
     comments: [CommentSchema] // Array of comments
 });
