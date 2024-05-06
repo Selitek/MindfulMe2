@@ -6,7 +6,7 @@ const RatingSchema = new mongoose.Schema({
     // Instead, we will dynamically add columns and rows as needed
     ratingsMatrix: {
         type: [[Number]], // Matrix of ratings where each row represents a movie and each column represents a user
-        default: [[]] // Start with an empty matrix
+        default: [[0]] // Start with an empty matrix
     }
 });
 

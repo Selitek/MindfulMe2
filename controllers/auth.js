@@ -372,14 +372,15 @@ exports.postSignup = async (req, res, next) => {
             password: req.body.password
             // You can set other properties here if needed
         });
-
+        console.log(`user id before save ${userId}`)
         // Save the new user to the database
         await newUser.save();
+        console.log(`user id after save ${userId}`)
         // //add new ratings
         // try {
         //     const newRating = new Rating();
     
-        //     await newRating.save();
+        //              await newRating.save();
     
         //     res.status(201).json({ message: 'Rating object added successfully', rating: newRating });
         // } catch (error) {
@@ -394,12 +395,14 @@ exports.postSignup = async (req, res, next) => {
             let ratingsMatrix = ratings.ratingsMatrix;
             
             if(ratingsMatrix.length === 0){
+                console.log(`user id inside try if ${userId}`)
                 ratingsMatrix.push(new Array(1).fill(0));
             }
             else{
                 
                 // Add a new column (array of zeros) for the new user
                 ratingsMatrix.forEach(row => {
+                    console.log(`user id inside try else ${userId}`)
                     row.push(0);
                 });
             }

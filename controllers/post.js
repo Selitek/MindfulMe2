@@ -71,7 +71,7 @@ exports.createPost = async (req, res, next) => {
         // Function to add a new movie
 
     try {
-        if (postId !== 0) {
+        if (postId !== 1) {
             // Get the existing ratings matrix
             let ratings = await Rating.findOne();
             let ratingsMatrix = ratings.ratingsMatrix;
